@@ -1,5 +1,11 @@
+CC=g++
+CPP_FLAGS=-fopenmp
+
+NUMS=8
+NUMT=8
+
 default:
-	g++ -fopenmp src/height.cc src/main.cc -o assign1
+	$(CC) $(CPP_FLAGS) -O3 -DNUMS=$(NUMS) -DNUMT=$(NUMT) src/height.cc src/main.cc -o assign1
 
 # for t (1 2 4 8)
 #   for s ( 2 10 50 100 )

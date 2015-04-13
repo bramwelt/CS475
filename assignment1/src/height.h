@@ -26,7 +26,9 @@
 #define Z23 3.
 #define Z33 3.
 
+#ifndef NUMS
 #define NUMS 8
+#endif
 
 float Height( int, int );
 
