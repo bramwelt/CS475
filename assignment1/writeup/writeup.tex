@@ -1,0 +1,30 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{changepage}
+\usepackage{tikz}
+\usepackage{pgfplots, pgfplotstable}
+
+\title{CS475: Project 1}
+\author{Trevor Bramwell}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Numerical Integration}
+
+
+% pgfplots
+\begin{tikzpicture}
+    \begin{axis}[
+        xlabel=Threads,
+        ylabel=MFLOPs
+    ]
+    \addplot table[x=col2,y=3,col sep=tab] {../compute.dat};
+    \end{axis}
+\end{tikzpicture}
+
+\end{document}
