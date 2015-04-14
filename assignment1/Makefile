@@ -1,5 +1,5 @@
 CC=g++
-CPP_FLAGS=-fopenmp
+CPP_FLAGS=-fopenmp -lm
 
 NUMS=8
 NUMT=8

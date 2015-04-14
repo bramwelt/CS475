@@ -42,7 +42,6 @@ int main( int argc, char *argv[ ] )
     begin = omp_get_wtime();
 
     #pragma omp parallel for default(none),reduction(+:volume),private(height,modif),shared(fullTileArea)
-    //#pragma omp parallel for default(none),reduction(+:volume),private(height),shared(fullTileArea)
     for( int i = 0; i < NUMS*NUMS; i++ )
     {
         int iu = i % NUMS;  // x
@@ -61,11 +60,12 @@ int main( int argc, char *argv[ ] )
 
     end = omp_get_wtime();
 
-    //cout << "VOLUME\tNUMS\tNUMT\tWTIME\n";
-    cout << volume << " ";
+    double time = 1000000.0*(double)(end-begin);
+
     cout << NUMS << " ";
     cout << NUMT << " ";
-    printf("%0.2lf", 1000000. * (end-begin));
+    cout << ((float)NUMS*(float)NUMS)/time << " ";
+    cout << "(" << volume << ")";
     cout << "\n";
 
     return 0;
