@@ -62,9 +62,9 @@ int main( int argc, char *argv[ ] )
 
     double time = 1000000.0*(double)(end-begin);
 
-    cout << NUMS << " ";
-    cout << NUMT << " ";
-    cout << ((float)NUMS*(float)NUMS)/time << " ";
+    cout << NUMS << "\t";
+    cout << NUMT << "\t";
+    cout << ((float)NUMS*(float)NUMS)/time << "\t";
     cout << "(" << volume << ")";
     cout << "\n";
 
