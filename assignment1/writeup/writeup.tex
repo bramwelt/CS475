@@ -16,15 +16,42 @@
 
 \section{Numerical Integration}
 
+\pgfplotsset{width=5in}
 
 % pgfplots
 \begin{tikzpicture}
-    \begin{axis}[
-        xlabel=Threads,
-        ylabel=MFLOPs
+    \begin{semilogyaxis}[
+        ymin=0,
+        title=MFLOPS vs. Subdivisions,
+        xlabel=Subdivision,
+        ylabel=MFLOPs,
+        legend style={
+            legend pos=outer north east
+        }
     ]
-    \addplot table[x=col2,y=3,col sep=tab] {../compute.dat};
-    \end{axis}
+    \addplot table[x=NUMS,y=MFLOPS] {../compute.table};
+    \addplot table[x=NUMS,y=MFLOPS] {../compute2.table};
+    \addplot table[x=NUMS,y=MFLOPS] {../compute4.table};
+    \addplot table[x=NUMS,y=MFLOPS] {../compute8.table};
+    \legend{1,2,4,8}
+    \addlegendimage{empty legend}
+    \addlegendentry{Threads \hfill}
+    \end{semilogyaxis}
 \end{tikzpicture}
+\\
+%\begin{tikzpicture}
+%    \begin{semilogyaxis}[
+%        ymin=0,
+%        title=MFLOPS vs. Threads,
+%        xlabel=Threads,
+%        ylabel=MFLOPs
+%    ]
+%    \addplot table[x=NUMT,y=MFLOPS] {../computet1.table};
+%    \addplot table[x=NUMT,y=MFLOPS] {../computet2.table};
+%    \addplot table[x=NUMT,y=MFLOPS] {../computet3.table};
+%    \addplot table[x=NUMT,y=MFLOPS] {../computet4.table};
+%    \addplot table[x=NUMT,y=MFLOPS] {../computet5.table};
+%   \end{semilogyaxis}
+%\end{tikzpicture}
 
 \end{document}
