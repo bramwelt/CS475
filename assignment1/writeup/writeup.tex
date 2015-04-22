@@ -14,44 +14,63 @@
 \begin{document}
 \maketitle
 
-\section{Numerical Integration}
+\section*{Numerical Integration}
 
 \pgfplotsset{width=5in}
 
-% pgfplots
 \begin{tikzpicture}
-    \begin{semilogyaxis}[
+    \begin{loglogaxis}[
         ymin=0,
-        title=MFLOPS vs. Subdivisions,
-        xlabel=Subdivision,
-        ylabel=MFLOPs,
+        title=Mega Heights Computed Per Second(MHCPs) vs. Subdivisions,
+        xlabel=Subdivisions,
+        ylabel=MHCPs,
+        log basis x={2},
+        log basis y={2},
         legend style={
             legend pos=outer north east
         }
     ]
-    \addplot table[x=NUMS,y=MFLOPS] {../compute.table};
-    \addplot table[x=NUMS,y=MFLOPS] {../compute2.table};
-    \addplot table[x=NUMS,y=MFLOPS] {../compute4.table};
-    \addplot table[x=NUMS,y=MFLOPS] {../compute8.table};
-    \legend{1,2,4,8}
+    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-1.dat};
+    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-2.dat};
+    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-4.dat};
+    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-8.dat};
+    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-16.dat};
+    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-32.dat};
+    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-64.dat};
+    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-128.dat};
+    \legend{1,2,4,8,16,32,64,128}
     \addlegendimage{empty legend}
     \addlegendentry{Threads \hfill}
-    \end{semilogyaxis}
+    \end{loglogaxis}
 \end{tikzpicture}
 \\
-%\begin{tikzpicture}
-%    \begin{semilogyaxis}[
-%        ymin=0,
-%        title=MFLOPS vs. Threads,
-%        xlabel=Threads,
-%        ylabel=MFLOPs
-%    ]
-%    \addplot table[x=NUMT,y=MFLOPS] {../computet1.table};
-%    \addplot table[x=NUMT,y=MFLOPS] {../computet2.table};
-%    \addplot table[x=NUMT,y=MFLOPS] {../computet3.table};
-%    \addplot table[x=NUMT,y=MFLOPS] {../computet4.table};
-%    \addplot table[x=NUMT,y=MFLOPS] {../computet5.table};
-%   \end{semilogyaxis}
-%\end{tikzpicture}
+\begin{tikzpicture}
+    \begin{semilogxaxis}[
+        ymin=0,
+        xtick={0,2,4,8,16,32,64,128,256},
+        title=Mega Heights Computed Per Second(MHCPs) vs. Threads,
+        xlabel=Threads,
+        ylabel=MHCPs,
+        log basis x={2},
+        legend style={
+            legend pos=outer north east
+        }
+    ]
+    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-1.dat};
+    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-2.dat};
+    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-4.dat};
+    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-8.dat};
+    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-16.dat};
+    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-32.dat};
+    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-64.dat};
+    \legend{1000,2000,4000,8000,16000,32000,46430}
+    \addlegendimage{empty legend}
+    \addlegendentry{Subdivision \hfill}
+    \end{semilogxaxis}
+\end{tikzpicture}
+
+\subsection*{Volume}
+
+The total volume comes to: $14.0625$.
 
 \end{document}
