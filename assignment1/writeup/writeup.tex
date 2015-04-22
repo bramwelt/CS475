@@ -2,6 +2,7 @@
 
 \usepackage{amsmath, amssymb, amsthm}
 \usepackage{enumerate}
+\usepackage{multicol}
 \usepackage{listings}
 \usepackage{changepage}
 \usepackage{tikz}
@@ -15,6 +16,52 @@
 \maketitle
 
 \section*{Numerical Integration}
+
+This assignment involved computing the volume under a Bezier surface using
+the OpenMP library. The program was compiled using \emph{gcc} and ran 10
+times on \emph{rabbit.engr.oregonstate.edu}, a 32 CPU machine, using the
+following combination of parameters:
+\\
+\\
+Subdivisions:
+\begin{multicols}{2}
+\begin{itemize}
+    \item 1000
+    \item 2000
+    \item 4000
+    \item 8000
+    \item 16000
+    \item 32000
+    \item 46340
+\end{itemize}
+\end{multicols}
+
+\noindent Threads:
+\begin{multicols}{2}
+\begin{itemize}
+    \item 1
+    \item 2
+    \item 4
+    \item 8
+    \item 16
+    \item 32
+    \item 64
+    \item 128
+\end{itemize}
+\end{multicols}
+
+\noindent Each run output the number of subdivision of the problem, the
+number of threads used, Mega Heights Computer Per Second (MHCPs), and
+total calculated volume. After all 10 runs the average MHCPs was
+computed for each group of subdivisions and threads. These results can
+be seen in the Tables section at the end of this report. A LibreOffice
+Calc document containing all the data is included in the \emph{data}
+directory of the project.
+
+\noindent The results after 10 runs agree on the volume under the Bezier
+surface equalling: ${\bf14.0625}$.
+
+\section*{Graphs}
 
 \pgfplotsset{width=5in}
 
@@ -30,20 +77,31 @@
             legend pos=outer north east
         }
     ]
-    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-1.dat};
-    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-2.dat};
-    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-4.dat};
-    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-8.dat};
-    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-16.dat};
-    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-32.dat};
-    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-64.dat};
-    \addplot table[x=NUMS,y=MFLOPS] {tables/tab1-128.dat};
+    \addplot+[smooth] table[x=NUMS,y=MHCPS] {tables/tab1-1.dat};
+    \addplot+[smooth] table[x=NUMS,y=MHCPS] {tables/tab1-2.dat};
+    \addplot+[smooth] table[x=NUMS,y=MHCPS] {tables/tab1-4.dat};
+    \addplot+[smooth] table[x=NUMS,y=MHCPS] {tables/tab1-8.dat};
+    \addplot+[smooth] table[x=NUMS,y=MHCPS] {tables/tab1-16.dat};
+    \addplot+[smooth] table[x=NUMS,y=MHCPS] {tables/tab1-32.dat};
+    \addplot+[smooth] table[x=NUMS,y=MHCPS] {tables/tab1-64.dat};
+    \addplot+[smooth] table[x=NUMS,y=MHCPS] {tables/tab1-128.dat};
     \legend{1,2,4,8,16,32,64,128}
     \addlegendimage{empty legend}
     \addlegendentry{Threads \hfill}
     \end{loglogaxis}
-\end{tikzpicture}
+\end{tikzpicture}\\
+
+\noindent It can be seen from this graph that adding more threads consistently
+increased the MHCPs. Starting at 32 threads, MHCPs dropped before
+increasing at a faster rate than lower numbers of threads. This is not
+very surprising because rabbit only has 32 CPUs, and is most likely due
+to the overhead incurred through process scheduling.\\
 \\
+\noindent Another interesting point is that MHCPs didn't increase until the
+subdivisions reached 8192. Given the number of CPUs on rabbit is 32, we
+can see: $8192/32 = 512 = (2^{13})$. I'm unsure as to why 512 is a
+special number in this instance.\\
+
 \begin{tikzpicture}
     \begin{semilogxaxis}[
         ymin=0,
@@ -56,21 +114,60 @@
             legend pos=outer north east
         }
     ]
-    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-1.dat};
-    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-2.dat};
-    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-4.dat};
-    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-8.dat};
-    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-16.dat};
-    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-32.dat};
-    \addplot+[smooth] table[x=NUMT,y=MFLOPS] {tables/tab2-64.dat};
+    \addplot+[smooth] table[x=NUMT,y=MHCPS] {tables/tab2-1.dat};
+    \addplot+[smooth] table[x=NUMT,y=MHCPS] {tables/tab2-2.dat};
+    \addplot+[smooth] table[x=NUMT,y=MHCPS] {tables/tab2-4.dat};
+    \addplot+[smooth] table[x=NUMT,y=MHCPS] {tables/tab2-8.dat};
+    \addplot+[smooth] table[x=NUMT,y=MHCPS] {tables/tab2-16.dat};
+    \addplot+[smooth] table[x=NUMT,y=MHCPS] {tables/tab2-32.dat};
+    \addplot+[smooth] table[x=NUMT,y=MHCPS] {tables/tab2-64.dat};
     \legend{1000,2000,4000,8000,16000,32000,46430}
     \addlegendimage{empty legend}
     \addlegendentry{Subdivision \hfill}
     \end{semilogxaxis}
-\end{tikzpicture}
+\end{tikzpicture}\\
 
-\subsection*{Volume}
+\noindent In this graph of MHCPs vs Threads, it is clear to see the
+scheduling overhead reduce MHCPs when threads surpass the number of CPUs
+available.
 
-The total volume comes to: $14.0625$.
+\section*{Speedup}
+
+Since these computations were run on a 32 CPU machine, the speedup for
+each can be determined by dividing the MHCPs by 32. Using this speedup
+we can determine the fraction of the program that is parallelizable.
+The largest MHCPs (554.28) was computed using 64 threads and 46,340
+subdivisions.
+
+Using Amdahl's Inverse Law, we have:
+
+\begin{align*}
+    F_{parallel} &= \frac{n}{n-1}\left(1-\frac{1}{Speedup}\right)\\
+                 &= \frac{32}{31}\left(1-\frac{1}{(554.28/32)}\right)\\
+                 &= 0.97266
+\end{align*}
+
+Given that 0.97266 (97.26\%) of the program is parallelizable,
+only 0.02734 (2.7\%) is sequential. Using Amdahl's Law, we can see the
+max speedup this program could ever achive is:
+
+\begin{align*}
+    maxSpeedup &= \frac{1}{1-F_{parallel}}\\
+               &= \frac{1}{1-0.97266}\\
+               &= 36.57644
+\end{align*}
+
+
+\section*{Tables}
+
+\pgfplotstabletypeset{tables/tab1-1.dat}|
+\pgfplotstabletypeset{tables/tab1-2.dat}|
+\pgfplotstabletypeset{tables/tab1-4.dat}
+\pgfplotstabletypeset{tables/tab1-8.dat}|
+\pgfplotstabletypeset{tables/tab1-16.dat}|
+\pgfplotstabletypeset{tables/tab1-32.dat}
+\pgfplotstabletypeset{tables/tab1-64.dat}|
+\pgfplotstabletypeset{tables/tab1-128.dat}
+
 
 \end{document}
