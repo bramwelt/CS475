@@ -1,4 +1,4 @@
-NUMS    NUMT  MFLOPS
+NUMS    NUMT  MHCPS
 1000    1     21.4138
 1000    2     27.2170
 1000    4     54.0796
