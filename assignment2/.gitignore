@@ -1,0 +1,5 @@
+nbodies
+
+*.aux
+*.mk
+*.log
