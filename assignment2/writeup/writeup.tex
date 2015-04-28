@@ -1,0 +1,117 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{enumerate}
+\usepackage{multicol}
+\usepackage{listings}
+\usepackage{changepage}
+\usepackage{tikz}
+\usepackage{pgfplots, pgfplotstable}
+\usepackage{caption}
+
+% Remove paragraph indents
+\setlength{\parindent}{0in}
+
+\title{CS475: Project 2}
+\author{Trevor Bramwell}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{N-Bodies}
+
+This project involved comparing the parallel performance of
+corse-grained, fine-grained, static scheduling, and dynamic scheduling
+for running an N-body simulation using the OpenMP library.\\
+
+The program was compiled using \emph{gcc} and ran on the
+\emph{rabbit.engr.oregonstate.edu} Xeon processor with 32 CPUs (not the
+Phi). It used the following combination of parameters:
+
+\begin{itemize}
+    \item Number of Bodies: 1024
+    \item Number of Steps: 512
+    \item Threads:
+\begin{multicols}{2}
+\begin{itemize}
+    \item 1
+    \item 2
+    \item 4
+    \item 8
+    \item 16
+    \item 31
+    \item 32
+\end{itemize}
+\end{multicols}
+\end{itemize}
+
+
+\section*{Graph}
+
+\pgfplotsset{width=5in}
+
+\begin{tikzpicture}
+    \begin{semilogxaxis}[
+        ymin=0,
+        xtick={1,2,4,8,16,32},
+        title=Mega Bodies Computed Per Second(MBCPs) vs. Threads,
+        xlabel=Threads,
+        ylabel=MBCPs,
+        log basis x={2},
+        legend style={
+            legend pos=outer north east
+        }
+    ]
+    \addplot+[smooth] table[x=NUMT,y=MBCPs] {../data/corse-static.dat};
+    \addplot+[smooth] table[x=NUMT,y=MBCPs] {../data/corse-dynamic.dat};
+    \addplot+[smooth] table[x=NUMT,y=MBCPs] {../data/fine-static.dat};
+    \addplot+[smooth] table[x=NUMT,y=MBCPs] {../data/fine-dynamic.dat};
+    \legend{Corse-Static, Corse-Dynamic, Fine-Static, Fine-Dynamic}
+    \addlegendimage{empty legend}
+    \addlegendentry{Parallelism \hfill}
+    \end{semilogxaxis}
+\end{tikzpicture}
+
+\section*{Patterns}
+
+Between Corse and Fine grained parallelism, the data show corse
+peforming much better. This is most likely do to the overhead of
+assigning too little work to each thread. For fine-grained parallelism,
+instead of working on an entire row of bodies, each thread only works on
+one at a time.\\
+
+The data shows static scheduling performs much better than dynamic for
+both corse and fine grained parallelism.\\
+
+Performance increases tremendously between 8 and 16 threads, and I
+believe this is because the program starts taking advantage of having
+full memory cache lines.\\
+
+Sadly, there was not enough time to finish computation for the 32
+threads. I have a strong feeling this means that performance at 32
+threads or greater is abysmal.
+
+\section*{Tables}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/corse-static.dat}
+\captionof{table}{Corse-Static}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/corse-dynamic.dat}
+\captionof{table}{Corse-Dynamic}
+\end{figure}
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/fine-static.dat}
+\captionof{table}{Fine-Static}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/fine-dynamic.dat}
+\captionof{table}{Fine-Dynamic}
+\end{figure}
+
+
+\end{document}
