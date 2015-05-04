@@ -10,5 +10,7 @@ do
     do
         make -s NUMT=${T} NUM=${N}
         ./false-sharing >> data/padding${T}.dat
+        make -s NUMT=${T} NUM=${N} PRIVATE=1
+        ./false-sharing >> data/padding${T}-private.dat
     done
 done

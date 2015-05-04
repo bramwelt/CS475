@@ -23,6 +23,11 @@ using std::cout;
 #define NUMT      4
 #endif
 
+#ifndef PRIVATE
+#define PRIVATE   0
+#endif
+
+
 struct s
 {
     float value;
@@ -42,10 +47,19 @@ main(int argc, char* argv[])
     #pragma omp parallel for
     for( int i = 0; i < 4; i++ )
     {
+#if PRIVATE>=1
+        float tmp = Array[i].value;
+        for( unsigned int j = 0; j < someBigNumber; j++ )
+        {
+            tmp = tmp + 2.0;
+        }
+        Array[i].value = tmp;
+#else
         for( unsigned int j = 0; j < someBigNumber; j++ )
         {
             Array[i].value = Array[i].value + 2.0;
         }
+#endif
     }
 
     double time1 = omp_get_wtime();
