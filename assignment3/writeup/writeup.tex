@@ -1,0 +1,208 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{enumerate}
+\usepackage{multicol}
+\usepackage{listings}
+\usepackage{changepage}
+\usepackage{tikz}
+\usepackage{pgfplots, pgfplotstable}
+\usepackage{caption}
+
+% Remove paragraph indents
+\setlength{\parindent}{0in}
+
+\title{CS475: Project 3}
+\author{Trevor Bramwell}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{False Sharing}
+
+This project used OpenMP to show how false-sharing can affect the
+performance of parallel applications. These insights were gained by
+writing a program that performed computations on a C struct with
+variable end-padding.
+
+The program was compiled using \emph{gcc} (without compiler
+optimizations) and ran on the \emph{rabbit.engr.oregonstate.edu} Xeon
+processor with 32 CPUs (not the Xeon Phi). It used the following combination
+of parameters:
+
+\begin{itemize}
+    \item Padding Size (in integers):
+        \begin{multicols}{2}
+            \begin{itemize}
+                \item 0
+                \item 1
+                \item 2
+                \item 3
+                \item 4
+                \item 5
+                \item 6
+                \item 7
+                \item 8
+                \item 9
+                \item 10
+                \item 11
+                \item 12
+                \item 14
+                \item 15
+                \item 16
+            \end{itemize}
+        \end{multicols}
+    \item Threads:
+        \begin{multicols}{2}
+            \begin{itemize}
+                \item 1
+                \item 2
+                \item 4
+                \item 8
+                \item 16
+            \end{itemize}
+        \end{multicols}
+\end{itemize}
+
+Along with the combinations of the above parameters, the program was
+also ran with a private variable maintained by each thread for
+accumulation. This put a stop to the false-sharing, and showed a more
+consistent improvement in performance when more threads were added.
+
+
+\section*{Graph}
+
+\pgfplotsset{width=5in}
+
+\begin{tikzpicture}
+    \begin{semilogyaxis}[
+        ymin=0,
+        xtick={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
+        title=Mega Increments per Second vs. Padding,
+        xlabel=Padding,
+        ylabel=Mega Increments per Second,
+        log basis y={2},
+        legend style={
+            legend pos=outer north east
+        }
+    ]
+    \addplot+[smooth] table[x=NUM,y=PERF] {../data/padding1.dat};
+    \addplot+[smooth] table[x=NUM,y=PERF] {../data/padding2.dat};
+    \addplot+[smooth,green!70!black] table[x=NUM,y=PERF] {../data/padding4.dat};
+    \addplot+[smooth,magenta] table[x=NUM,y=PERF] {../data/padding8.dat};
+    \addplot+[smooth,brown] table[x=NUM,y=PERF] {../data/padding16.dat};
+    \addplot[mark=none,thick,blue,domain=0:16] {35};
+    \addplot[mark=none,thick,red,domain=0:16] {64};
+    \addplot[mark=none,thick,green!70!black,domain=0:16] {112};
+    \legend{1, 2, 4, 8, 16, 1-p, 2-p, {4,8,16-p}}
+    \addlegendimage{empty legend}
+    \addlegendentry{Threads \hfill}
+    \end{semilogyaxis}
+\end{tikzpicture}
+
+\section*{Patterns}
+
+\paragraph{Private Variables}
+The lines 1-p, 2-p, and 4,8,16-p are the average performance per thread
+using private variables. They are baselines for the best
+average-performance for those numbers of threads.
+
+\paragraph{One Thread}
+With a single thread there is no performance gain as it is being ran on
+a single CPU and can't take advantage of spatial coherence.
+
+\paragraph{Two Threads}
+With two threads, performance stays constant after a padding of 3-4. I
+believe this is because the number of cache lines is greater than 2, and
+being limited to two threads, the program can't take advantage of the
+other cache lines.
+
+\paragraph{4,8,16 Threads}
+The following is an explanation of the performance of the program while
+padding is increased each step of the way.
+
+\begin{description}
+    \item[0:] Without any padding, performance was abysmal (worse than a
+        single thread) even with 16 threads. This is the most important
+        data point since it helps characterize the rest.
+    \item[1:] There is the slightest increase in performance.
+    \item[2:] Performance is continuing to increase, though the greatest
+        comes with two threads. Remember that the Xeon has 2 CPU
+        sockets. This same performance can be seen in the 4,8, and 16
+        threads, but at a lower gain because of the cache-miss overhead.
+    \item[3-6:] Performance peaks and begins to stabilize.
+    \item[7:] There is a distinct drop in performance as false-sharing
+        has started. With 4 or more threads each cache line is reloaded
+        with the same data multiple times.
+    \item[8-12:] There is little change in performance.
+    \item[13-16:] The cache lines are now all being taken advantage of,
+        false-sharing has stopped, and the best performance has been
+        reached.
+\end{description}
+
+There is difference in the amount of padding needed before false-sharing
+stops, between this graph and the one in the notes. The performance
+increases at 13, while the notes show an increase at 15. This is because
+of the Xeon most likely has a slightly smaller 4-Way L1 cache than the
+machine the notes used.
+
+\twocolumn
+
+\section*{Tables}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding1.dat}
+\captionof{table}{Padding - 1 Thread}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding2.dat}
+\captionof{table}{Padding - 2 Threads}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding4.dat}
+\captionof{table}{Padding - 4 Threads}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding8.dat}
+\captionof{table}{Padding - 8 Threads}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding16.dat}
+\captionof{table}{Padding - 16 Threads}
+\end{figure}
+
+\twocolumn
+
+\section*{Tables - Private Sum}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding1-private.dat}
+\captionof{table}{Padding - 1 Thread - Private Sum}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding2-private.dat}
+\captionof{table}{Padding - 2 Threads - Private Sum}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding4-private.dat}
+\captionof{table}{Padding - 4 Threads - Private Sum}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding8-private.dat}
+\captionof{table}{Padding - 8 Threads - Private Sum}
+\end{figure}
+
+\begin{figure}[h]
+\pgfplotstabletypeset[string type]{../data/padding16-private.dat}
+\captionof{table}{Padding - 16 Threads - Private Sum}
+\end{figure}
+
+\end{document}
