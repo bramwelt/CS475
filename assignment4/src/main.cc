@@ -9,14 +9,14 @@
 //
 // A simulation in which each element of the simulation executes in its
 // own thread where it looks at the state of the world around it and
-// react to it. 
+// react to it.
 
 // Simulation Description
 //
 // You are creating a simulation of a grain-growing operation. The
 // amount the grain grows is affected by the temperature, amount of
 // precipitation, and the number of "graindeer" around to eat it. The
-// number of graindeer depends on the amount of grain available to eat. 
+// number of graindeer depends on the amount of grain available to eat.
 
 #include <iostream>
 #include <stdio.h>
@@ -58,6 +58,7 @@ int NowYear  = 2015;
 int NowNumDeer = 1;
 float NowHeight = 1.0;
 
+// Temperature and Precipitation. Initialized at start of simulation.
 float NowTemp;
 float NowPrecip;
 
@@ -67,11 +68,13 @@ float NowPrecip;
 //
 void GrainDeer();
 void Grain();
-void Watcher(); 
+void Watcher();
 
 void incMonth();
 void printState();
 void calcTempPrecip();
+float calcGrainHeight();
+int calcDeerGrowth(float grainHeight);
 
 float Ranf(float, float);
 int Ranf(int, int);
@@ -97,22 +100,21 @@ main(int argc, char* argv[])
         {
             GrainDeer();
         }
-    
+
         #pragma omp section
         {
             Grain();
         }
-    
+
         #pragma omp section
         {
             Watcher();
         }
     }  // implied barrier
 
-    cout << "Simulation Complete\n";
+    fprintf(stderr, "Simulation Complete\n");
     return 0;
 }
-
 
 void
 Watcher()
@@ -139,18 +141,20 @@ Watcher()
     }
 }
 
-
 void
 GrainDeer()
 {
     while( NowYear <= 2020 )
     {
         // Compute into tmp variables
+        float nextGrainHeight = calcGrainHeight();
+        int nextNumDeer = calcDeerGrowth(nextGrainHeight);
 
         // DoneComputing barrier:
         #pragma omp barrier
 
         // Copy into global variables
+        NowNumDeer = nextNumDeer;
 
         // DoneAssigning barrier:
         #pragma omp barrier
@@ -161,18 +165,19 @@ GrainDeer()
     }
 }
 
-
 void
 Grain()
 {
     while( NowYear <= 2020 )
     {
         // Compute into tmp variables
+        float nextGrainHeight = calcGrainHeight();
 
         // DoneComputing barrier:
         #pragma omp barrier
 
         // Copy into global variables
+        NowHeight = nextGrainHeight;
 
         // DoneAssigning barrier:
         #pragma omp barrier
@@ -186,15 +191,15 @@ void
 printState()
 {
     if (NowYear == 2015 && NowMonth == 0) {
-        cout << "MON\tYEAR" << "\n";
+        cout << "YEAR\tMON\tTEMP\tPRECIP\tGRAIN\tDEER" << "\n";
     }
-    cout << NowMonth << ", " << NowYear << "\n";
-    // cout << "NUM\tNUMT\tPERF\tTIME" << "\n";
-    // cout << NUM << "\t";
-    // cout << NUMT << "\t";
-    // cout << ((float)someBigNumber*4.0)/timedelta/10000000.0 << "\t";
-    // cout << timedelta << "s";
-    // cout << "\n";
+    cout << NowYear << " ";
+    cout << NowMonth << " ";
+    cout << NowTemp << " ";
+    cout << NowPrecip << " ";
+    cout << NowHeight << " ";
+    cout << NowNumDeer;
+    cout << "\n";
 }
 
 void
@@ -206,6 +211,64 @@ incMonth()
     } else {
         ++NowMonth;
     }
+}
+
+//
+// Each month you will need to figure out how much the grain grows. If
+// conditions are good, it will grow by GRAIN_GROWS_PER_MONTH. If
+// conditions are not good, it won't.
+//
+// You know how good conditions are by seeing how close you are to an
+// ideal temperature (°F) and precipitation (inches).
+//
+// tempFactor = e^-((NowTemp - MidTemp)/10)^2
+// precipFactor = e^-((NowPrecip - MidPrecip)/10)^2
+//
+//  You then use tempFactor and precipFactor like this:
+//
+//   NowHeight += tempFactor * precipFactor *
+//   GRAIN_GROWS_PER_MONTH;
+//    NowHeight -= (float)NowNumDeer * ONE_DEER_EATS_PER_MONTH;
+//
+//    Be sure to clamp NowHeight to zero.
+//
+float
+calcGrainHeight()
+{
+    int nextGrainHeight = NowHeight;
+
+    float tempFactor = expf(-pow((NowTemp - MIDTEMP)/10, 2));
+    float precipFactor = expf(-pow((NowPrecip - MIDPRECIP)/10, 2));
+
+    nextGrainHeight += tempFactor * precipFactor * GRAIN_GROWS_PER_MONTH;
+    nextGrainHeight -= (float)NowNumDeer * ONE_DEER_EATS_PER_MONTH;
+
+    if (nextGrainHeight < 0.0) nextGrainHeight = 0.0;
+
+    return nextGrainHeight;
+}
+
+//
+// The Carrying Capacity of the graindeer is the number of
+// inches of height of the grain. If the number of graindeer
+// exceeds this value at the end of a month, decrease the number
+// of graindeer by one. If the number of graindeer is less than
+// this value at the end of a month, increase the number of
+// graindeer by one.
+//
+int
+calcDeerGrowth(float NextHeight)
+{
+    int nextNumDeer = NowNumDeer;
+
+    float capacity = nextNumDeer * ONE_DEER_EATS_PER_MONTH;
+    if (NextHeight > capacity) {
+        ++nextNumDeer;
+    } else if (NextHeight < capacity) {
+        --nextNumDeer;
+    }
+
+    return nextNumDeer;
 }
 
 void
@@ -229,7 +292,6 @@ Ranf(float low, float high)
 
     return(low  +  r * (high - low) / (float)RAND_MAX);
 }
-
 
 int
 Ranf(int ilow, int ihigh)
