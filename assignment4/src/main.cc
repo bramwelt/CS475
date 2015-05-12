@@ -187,17 +187,22 @@ Grain()
     }
 }
 
+// cm = inches * 2.54
+// °C = (5.0/9.0)*(°F-32)
 void
 printState()
 {
     if (NowYear == 2015 && NowMonth == 0) {
-        cout << "YEAR\tMON\tTEMP\tPRECIP\tGRAIN\tDEER" << "\n";
+        cout << "STEP\tYEAR\tMON\tTEMP\tPRECIP\tGRAIN\tDEER" << "\n";
     }
+    int index = (NowYear % 2014);
+    int step = index + NowMonth + (13 * (index-1));
+    cout << step << " ";
     cout << NowYear << " ";
     cout << NowMonth << " ";
-    cout << NowTemp << " ";
-    cout << NowPrecip << " ";
-    cout << NowHeight << " ";
+    cout << (5.0/9.0)*(NowTemp-32) << " ";
+    cout << (NowPrecip*2.54) << " ";
+    cout << (NowHeight*2.54) << " ";
     cout << NowNumDeer;
     cout << "\n";
 }
