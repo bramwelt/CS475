@@ -34,9 +34,9 @@ using std::cout;
 const float GRAIN_GROWS_PER_MONTH = 8.0; // Inches
 const float ONE_DEER_EATS_PER_MONTH = 0.5;
 
-const float AVG_PRECIP_PER_MONTH = 6.0; // Inches
+const float AVG_PRECIP_PER_MONTH = 10.0; // Inches
 const float AMP_PRECIP_PER_MONTH = 6.0; // Inches
-const float RANDOM_PRECIP = 2.0;
+const float RANDOM_PRECIP = 8.0;
 
 const float AVG_TEMP = 50.0; // Fahrenheit
 const float AMP_TEMP = 20.0; // Fahrenheit
