@@ -62,6 +62,9 @@ float NowHeight = 1.0;
 float NowTemp;
 float NowPrecip;
 
+// Wild fire damage
+float NowFire = 0.0;
+
 
 //
 // Function Prototypes
@@ -69,12 +72,14 @@ float NowPrecip;
 void GrainDeer();
 void Grain();
 void Watcher();
+void Wildfire();
 
 void incMonth();
 void printState();
 void calcTempPrecip();
 float calcGrainHeight();
 int calcDeerGrowth(float grainHeight);
+float calcWildfireDamage(float nextGrainHeight);
 
 float Ranf(float, float);
 int Ranf(int, int);
@@ -91,7 +96,7 @@ main(int argc, char* argv[])
     calcTempPrecip();
 
     // Spawn 3 Threads
-    omp_set_num_threads(3);
+    omp_set_num_threads(4);
 
 
     #pragma omp parallel sections
@@ -104,6 +109,11 @@ main(int argc, char* argv[])
         #pragma omp section
         {
             Grain();
+        }
+
+        #pragma omp section
+        {
+            Wildfire();
         }
 
         #pragma omp section
@@ -187,6 +197,29 @@ Grain()
     }
 }
 
+void
+Wildfire()
+{
+    while( NowYear <= 2020 )
+    {
+        // Compute into tmp variables
+        float nextGrainHeight = calcGrainHeight();
+        float wildFireDamage = calcWildfireDamage(nextGrainHeight);
+
+        // DoneComputing barrier:
+        #pragma omp barrier
+
+        // Copy into global variables
+        NowFire = wildFireDamage;
+
+        // DoneAssigning barrier:
+        #pragma omp barrier
+
+        // DonePrinting barrier:
+        #pragma omp barrier
+    }
+}
+
 // cm = inches * 2.54
 // °C = (5.0/9.0)*(°F-32)
 void
@@ -240,17 +273,32 @@ incMonth()
 float
 calcGrainHeight()
 {
-    int nextGrainHeight = NowHeight;
+    float nextGrainHeight = NowHeight;
 
     float tempFactor = expf(-pow((NowTemp - MIDTEMP)/10, 2));
     float precipFactor = expf(-pow((NowPrecip - MIDPRECIP)/10, 2));
 
     nextGrainHeight += tempFactor * precipFactor * GRAIN_GROWS_PER_MONTH;
     nextGrainHeight -= (float)NowNumDeer * ONE_DEER_EATS_PER_MONTH;
+    nextGrainHeight -= NowFire;
 
     if (nextGrainHeight < 0.0) nextGrainHeight = 0.0;
 
     return nextGrainHeight;
+}
+
+float
+calcWildfireDamage(float nextGrainHeight)
+{
+    float wildFireDamage = 0.0;
+
+    int randomMonth = Ranf(1, 11);
+    // In a random month, have wildfire wipe out 20% of grain.
+    if (randomMonth == NowMonth) {
+       wildFireDamage = nextGrainHeight * 0.2;
+    }
+
+    return wildFireDamage;
 }
 
 //
