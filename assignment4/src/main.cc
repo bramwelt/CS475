@@ -34,9 +34,9 @@ using std::cout;
 const float GRAIN_GROWS_PER_MONTH = 8.0; // Inches
 const float ONE_DEER_EATS_PER_MONTH = 0.5;
 
-const float AVG_PRECIP_PER_MONTH = 10.0; // Inches
-const float AMP_PRECIP_PER_MONTH = 6.0; // Inches
-const float RANDOM_PRECIP = 8.0;
+const float AVG_PRECIP_PER_MONTH = 8.0; // Inches
+const float AMP_PRECIP_PER_MONTH = 2.0; // Inches
+const float RANDOM_PRECIP = 2.0;
 
 const float AVG_TEMP = 50.0; // Fahrenheit
 const float AMP_TEMP = 20.0; // Fahrenheit
@@ -226,7 +226,7 @@ void
 printState()
 {
     if (NowYear == 2015 && NowMonth == 0) {
-        cout << "STEP\tYEAR\tMON\tTEMP\tPRECIP\tGRAIN\tDEER" << "\n";
+        cout << "STEP\tYEAR\tMON\tTEMP(C)\tPRECIP(cm)\tGRAIN(cm)\tDEER\tFIRE" << "\n";
     }
     int index = (NowYear % 2014);
     int step = index + NowMonth + (13 * (index-1));
@@ -236,7 +236,8 @@ printState()
     cout << (5.0/9.0)*(NowTemp-32) << " ";
     cout << (NowPrecip*2.54) << " ";
     cout << (NowHeight*2.54) << " ";
-    cout << NowNumDeer;
+    cout << NowNumDeer << " ";
+    cout << NowFire;
     cout << "\n";
 }
 
@@ -294,8 +295,8 @@ calcWildfireDamage(float nextGrainHeight)
 
     int randomMonth = Ranf(1, 11);
     // In a random month, have wildfire wipe out 20% of grain.
-    if (randomMonth == NowMonth) {
-       wildFireDamage = nextGrainHeight * 0.2;
+    if (abs(NowMonth - randomMonth) < 2) {
+       wildFireDamage = nextGrainHeight * 0.8;
     }
 
     return wildFireDamage;
