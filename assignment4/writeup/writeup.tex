@@ -1,0 +1,104 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{enumerate}
+\usepackage{multicol}
+\usepackage{listings}
+\usepackage{listings}
+\usepackage{changepage}
+\usepackage{tikz}
+\usepackage{pgfplots, pgfplotstable}
+\usepackage{caption}
+
+\usepgfplotslibrary{dateplot}
+\usepgfplotslibrary{colormaps}
+
+\lstset{
+    basicstyle=\tiny\ttfamily
+}
+
+% Remove paragraph indents
+\setlength{\parindent}{0in}
+
+\title{CS475: Project 4}
+\author{Trevor Bramwell}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Functional Decomposition}
+
+Functional decomposition involves breaking an application down into it's
+functional parts. For this project OpenMP was used to break down a
+grain-growing simulation. The purpose of this project was to take
+advantage of OpenMP's section and task directives, while learning about
+barriers.\\
+
+I added my own flair to the simulation by having an occasional
+brush-fire wipe out 20\% of the grain. This was done by adding another
+thread which set the NowFire variable, which in turn was used by the
+new grain height computation function. The effects of this change can be
+seen in the graph below.\\
+
+The program was compiled using \emph{gcc -fopenmp -lm -O3} and ran on my
+personal laptop: a Lenovo ThinkPad W540 (8 CPUs - 4 cores per socket, 2
+threads per core, and 1 socket).\\
+
+My program used the following combination of parameters:
+
+\begin{itemize}
+    \item Simulation Variables
+        \begin{multicols}{2}
+            \begin{itemize}
+                \item Temperature
+                \item Precipitation
+                \item Grain
+                \item Fire
+                \item Deer
+            \end{itemize}
+        \end{multicols}
+\end{itemize}
+
+
+\section*{Graph}
+
+\pgfplotsset{width=5in}
+\pgfplotstableread{../data/graindeer.dat}\graindeer
+
+\begin{tikzpicture}
+    \begin{axis}[
+        ymin=-10,
+        title=Growth vs. Time,
+        xlabel=Time,
+        ylabel=Growth,
+        legend style={
+            legend pos=outer north east
+        }
+    ]
+    \addplot+[smooth, mark=none] table[y=TEMP(C), x=STEP] {\graindeer};
+    \addplot+[smooth, mark=none] table[y=PRECIP(cm), x=STEP] {\graindeer};
+    \addplot+[smooth, mark=none,color=green!60!black] table[y=GRAIN(cm), x=STEP] {\graindeer};
+    \addplot+[smooth, mark=none] table[y=DEER, x=STEP] {\graindeer};
+    \addplot+[smooth, mark=none, color=orange, thick] table[y=FIRE, x=STEP] {\graindeer};
+    \legend{Temperature, Precipitation, Grain, Deer, Fire}
+    \addlegendimage{empty legend}
+    \addlegendentry{Simultation \hfill}
+    \end{axis}
+\end{tikzpicture}
+
+\section*{Patterns}
+
+As the grain increased, more deer were born and ate more. Each time a
+wildfire broke out the grain was reduced significantly, and as a result
+the deer started dying.
+
+\section*{Tables}
+
+\begin{figure*}[b]
+\lstinputlisting{../data/graindeer.dat}
+\captionof{table}{Grain Deer Simulation}
+\end{figure*}
+
+
+\end{document}
