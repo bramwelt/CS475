@@ -11,15 +11,12 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#ifdef WIN32
-#include <windows.h>
-#else
 #include <unistd.h>
-#endif
 #include <omp.h>
 
 #include "CL/cl.h"
 #include "CL/cl_platform.h"
+#include "CL/opencl.h"
 
 
 #ifndef NUM_ELEMENTS
@@ -32,7 +29,7 @@
 
 #define	NUM_WORK_GROUPS		NUM_ELEMENTS/LOCAL_SIZE
 
-const char * CL_FILE_NAME = { "first.cl" };
+const char * CL_FILE_NAME = "src/first.cl";
 const float TOL = 0.0001f;
 
 void Wait( cl_command_queue );
@@ -46,14 +43,8 @@ main( int argc, char *argv[ ] )
 	// (no point going on if we can't):
 
 	FILE *fp;
-#ifdef WIN32
-	errno_t err = fopen_s( &fp, CL_FILE_NAME, "r" );
-	if( err != 0 )
-#else
 	fp = fopen( CL_FILE_NAME, "r" );
-	if( fp == NULL )
-#endif
-	{
+	if( fp == NULL ) {
 		fprintf( stderr, "Cannot open OpenCL source file '%s'\n", CL_FILE_NAME );
 		return 1;
 	}
@@ -61,17 +52,22 @@ main( int argc, char *argv[ ] )
 	cl_int status;		// returned status from opencl calls
 				// test against CL_SUCCESS
 
-	// get the platform id:
+    cl_uint numPlatforms;
+    status = clGetPlatformIDs( 0, NULL, &numPlatforms );
+    if( status != CL_SUCCESS )
+        fprintf( stderr, "clGetPlatformIDs failed (1)\n" );
 
-	cl_platform_id platform;
-	status = clGetPlatformIDs( 1, &platform, NULL );
-	if( status != CL_SUCCESS )
-		fprintf( stderr, "clGetPlatformIDs failed (2)\n" );
-	
-	// get the device id:
+    //fprintf( stderr, "Number of Platforms = %d\n", numPlatforms );
+
+    cl_platform_id *platforms = new cl_platform_id[ numPlatforms ];
+    status = clGetPlatformIDs( numPlatforms, platforms, NULL );
+    if( status != CL_SUCCESS )
+        fprintf( stderr, "clGetPlatformIDs failed (2)\n" );
+
+	// get the device id of Platform 1:
 
 	cl_device_id device;
-	status = clGetDeviceIDs( platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL );
+	status = clGetDeviceIDs( platforms[1], CL_DEVICE_TYPE_GPU, 1, &device, NULL );
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clGetDeviceIDs failed (2)\n" );
 
@@ -138,7 +134,7 @@ main( int argc, char *argv[ ] )
 	clProgramText[fileSize] = '\0';
 	fclose( fp );
 	if( n != fileSize )
-		fprintf( stderr, "Expected to read %d bytes read from '%s' -- actually read %d.\n", fileSize, CL_FILE_NAME, n );
+		fprintf( stderr, "Expected to read %ld bytes read from '%s' -- actually read %ld.\n", fileSize, CL_FILE_NAME, n );
 
 	// create the text for the kernel program:
 
@@ -151,7 +147,7 @@ main( int argc, char *argv[ ] )
 
 	// 8. compile and link the kernel code:
 
-	char *options = { "" };
+	const char * options = "";
 	status = clBuildProgram( program, 1, &device, options, NULL, NULL );
 	if( status != CL_SUCCESS )
 	{
@@ -225,12 +221,11 @@ main( int argc, char *argv[ ] )
 		}
 	}
 
-	fprintf( stderr, "%8d\t%4d\t%10d\t%10.3lf GigaMultsPerSecond\n",
-		NUM_ELEMENTS, LOCAL_SIZE, NUM_WORK_GROUPS, (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
-
-#ifdef WIN32
-	Sleep( 2000 );
+#if LOCAL_SIZE==1
+    printf("NUM_ELEMENTS\tLOCAL_SIZE\tNUM_WORK_GROUPS\tGMPS\n");
 #endif
+	printf("%8d\t%4d\t%10d\t%10.3lf GigaMultsPerSecond\n",
+		NUM_ELEMENTS, LOCAL_SIZE, NUM_WORK_GROUPS, (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
 
 
 	// 13. clean everything up:

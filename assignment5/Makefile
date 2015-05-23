@@ -1,6 +1,8 @@
 CC=g++
-CFLAGS=-fopenmp -lm -O3
-HEADERS=headers/cl.h headers/cl_platform.h #headers/libOpenCL.so
+CFLAGS=-I/usr/local/cuda-7.0/include
+LINKS=-lOpenCL -lm -fopenmp
+LOCAL_SIZE=32
+NUM_ELEMENTS=65536
 
 default:
-	$(CC) $(CFLAGS) src/first.cpp $(HEADERS) -o first
+	$(CC) $(CFLAGS) -DLOCAL_SIZE=${LOCAL_SIZE} -DNUM_ELEMENTS=${NUM_ELEMENTS} src/first.cpp -o first $(LINKS)
