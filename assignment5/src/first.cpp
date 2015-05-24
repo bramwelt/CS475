@@ -76,12 +76,13 @@ main( int argc, char *argv[ ] )
 	float *hA = new float[ NUM_ELEMENTS ];
 	float *hB = new float[ NUM_ELEMENTS ];
 	float *hC = new float[ NUM_ELEMENTS ];
+	float *hD = new float[ NUM_ELEMENTS ];
 
 	// fill the host memory buffers:
 
 	for( int i = 0; i < NUM_ELEMENTS; i++ )
 	{
-		hA[i] = hB[i] = (float) sqrt(  (double)i  );
+		hA[i] = hB[i] = hC[i] = (float) sqrt(  (double)i  );
 	}
 
 	size_t dataSize = NUM_ELEMENTS * sizeof(float);
@@ -108,17 +109,25 @@ main( int argc, char *argv[ ] )
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clCreateBuffer failed (2)\n" );
 
-	cl_mem dC = clCreateBuffer( context, CL_MEM_WRITE_ONLY, dataSize, NULL, &status );
+	cl_mem dC = clCreateBuffer( context, CL_MEM_READ_ONLY,  dataSize, NULL, &status );
+	if( status != CL_SUCCESS )
+		fprintf( stderr, "clCreateBuffer failed (2)\n" );
+
+	cl_mem dD = clCreateBuffer( context, CL_MEM_WRITE_ONLY, dataSize, NULL, &status );
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clCreateBuffer failed (3)\n" );
 
-	// 6. enqueue the 2 commands to write the data from the host buffers to the device buffers:
+	// 6. enqueue the 3 commands to write the data from the host buffers to the device buffers:
 
 	status = clEnqueueWriteBuffer( cmdQueue, dA, CL_FALSE, 0, dataSize, hA, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clEnqueueWriteBuffer failed (1)\n" );
 
 	status = clEnqueueWriteBuffer( cmdQueue, dB, CL_FALSE, 0, dataSize, hB, 0, NULL, NULL );
+	if( status != CL_SUCCESS )
+		fprintf( stderr, "clEnqueueWriteBuffer failed (2)\n" );
+
+	status = clEnqueueWriteBuffer( cmdQueue, dC, CL_FALSE, 0, dataSize, hC, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clEnqueueWriteBuffer failed (2)\n" );
 
@@ -179,6 +188,9 @@ main( int argc, char *argv[ ] )
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clSetKernelArg failed (3)\n" );
 
+	status = clSetKernelArg( kernel, 3, sizeof(cl_mem), &dD );
+	if( status != CL_SUCCESS )
+		fprintf( stderr, "clSetKernelArg failed (3)\n" );
 
 	// 11. enqueue the kernel object for execution:
 
@@ -199,7 +211,7 @@ main( int argc, char *argv[ ] )
 
 	// 12. read the results buffer back from the device to the host:
 
-	status = clEnqueueReadBuffer( cmdQueue, dC, CL_TRUE, 0, dataSize, hC, 0, NULL, NULL );
+	status = clEnqueueReadBuffer( cmdQueue, dD, CL_TRUE, 0, dataSize, hD, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
 			fprintf( stderr, "clEnqueueReadBuffer failed\n" );
 
@@ -207,17 +219,19 @@ main( int argc, char *argv[ ] )
 
 	// did it work?
 
+    /*
 	for( int i = 0; i < NUM_ELEMENTS; i++ )
 	{
-		float expected = hA[i] * hB[i];
-		if( fabs( hC[i] - expected ) > TOL )
+		float expected = hA[i] * hB[i] + hC[i];
+		if( fabs( hD[i] - expected ) > TOL )
 		{
-			fprintf( stderr, "%4d: %13.6f * %13.6f wrongly produced %13.6f instead of %13.6f (%13.8f)\n",
-				i, hA[i], hB[i], hC[i], expected, fabs(hC[i]-expected) );
-			fprintf( stderr, "%4d:    0x%08x *    0x%08x wrongly produced    0x%08x instead of    0x%08x\n",
-				i, LookAtTheBits(hA[i]), LookAtTheBits(hB[i]), LookAtTheBits(hC[i]), LookAtTheBits(expected) );
+			fprintf( stderr, "%4d: %13.6f * %13.6f + %13.6f wrongly produced %13.6f instead of %13.6f (%13.8f)\n",
+				i, hA[i], hB[i], hC[i], hD[i], expected, fabs(hD[i]-expected) );
+			fprintf( stderr, "%4d:    0x%08x *    0x%08x +    0x%08x wrongly produced    0x%08x instead of    0x%08x\n",
+				i, LookAtTheBits(hA[i]), LookAtTheBits(hB[i]), LookAtTheBits(hC[i]), LookAtTheBits(hD[i]), LookAtTheBits(expected) );
 		}
 	}
+    */
 
 #if (LOCAL_SIZE==1 && USE_GROUP==0) || (USE_GROUP==1 && NUM_ELEMENTS==1024)
     printf("NUM_ELEMENTS\tLOCAL_SIZE\tNUM_WORK_GROUPS\tGMPS\n");
@@ -234,10 +248,12 @@ main( int argc, char *argv[ ] )
 	clReleaseMemObject(     dA  );
 	clReleaseMemObject(     dB  );
 	clReleaseMemObject(     dC  );
+	clReleaseMemObject(     dD  );
 
 	delete [ ] hA;
 	delete [ ] hB;
 	delete [ ] hC;
+	delete [ ] hD;
 
 	return 0;
 }
