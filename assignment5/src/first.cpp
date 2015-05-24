@@ -189,8 +189,6 @@ main( int argc, char *argv[ ] )
 
 	double time0 = omp_get_wtime( );
 
-	time0 = omp_get_wtime( );
-
 	status = clEnqueueNDRangeKernel( cmdQueue, kernel, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clEnqueueNDRangeKernel failed: %d\n", status );
@@ -221,7 +219,7 @@ main( int argc, char *argv[ ] )
 		}
 	}
 
-#if LOCAL_SIZE==1
+#if (LOCAL_SIZE==1 && USE_GROUP==0) || (USE_GROUP==1 && NUM_ELEMENTS==1024)
     printf("NUM_ELEMENTS\tLOCAL_SIZE\tNUM_WORK_GROUPS\tGMPS\n");
 #endif
 	printf("%8d\t%4d\t%10d\t%10.3lf GigaMultsPerSecond\n",
