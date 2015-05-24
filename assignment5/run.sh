@@ -3,6 +3,7 @@
 #[[ -d data ]] && rm data/*
 
 global_size=(1 2 3 4 5 6 7 8 9 10 11 12 13 14)
+# Forgot 16 ... oh well
 local_size=(1 2 4 8 32 64 128 256 512 1024)
 
 for G in ${global_size[@]}; do

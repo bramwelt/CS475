@@ -14,7 +14,7 @@
 \usepgfplotslibrary{colormaps}
 
 \lstset{
-    basicstyle=\tiny\ttfamily
+    basicstyle=\small\ttfamily
 }
 
 % Remove paragraph indents
@@ -30,12 +30,12 @@
 \section*{OpenCL Array Multiply, Multiply-Add, and Multiply-Reduce}
 
 This assignment was compiled on my laptop, a Thinkpad W540 with 8 CPUs
-(1 sockets, 4 cores, 2 threads per core) and a Nvidia Quatro K1100M.
+(1 sockets, 4 cores, 2 threads per core) and a Nvidia Quadro K1100M.
 
 I had three major problems getting my program to compile and run:
 \begin{itemize}
     \item Proprietary Graphics
-        Though the Nvidia Quatro K1100M supports OpenCL, from my
+        Though the Nvidia Quadro K1100M supports OpenCL, from my
         experience the open source drivers do not. There may be CUDA
         drivers, or an OpenCL SDK in a seperate package, but they are
         bundled with the open source driver, nor is there any solid
@@ -49,52 +49,217 @@ I had three major problems getting my program to compile and run:
         instead of after.
     \item Multiple GPUs (Bumblebee)
         The W540 Thinkpad actually contains two GPUs: an integrated
-        Intel graphics processor, and the Quatro K1100M. The printinfo
-        command showed both cards, with only the Quatro supporting
+        Intel graphics processor, and the Quadro K1100M. The printinfo
+        command showed both cards, with only the Quadro supporting
         OpenCL. I had to change the first.cpp file to query for both
-        devices, and use the second (Quatro) one.
+        devices, and use the second (Quadro) one.
+\end{itemize}
 
-After these hurdles I was able to compile, run, and recieved data from
-the program. 
+After these hurdles I was able to compile, run, and received data from
+the program. I did not have time to look into Multiply-reductions, nor
+was I able to fit everything into two graphs. The graph issue is due to
+me having too much data.
 
-\section*{Graph}
+\section*{Graph: Multiply (Local)}
 
 \pgfplotsset{width=5in}
-\pgfplotstableread{../data/graindeer.dat}\graindeer
 
 \begin{tikzpicture}
-    \begin{axis}[
-        ymin=-10,
-        title=Growth vs. Time,
-        xlabel=Time,
-        ylabel=Growth,
+    \begin{loglogaxis}[
+        ymin=0,
+        log basis x={2},
+        title=Performance vs. Local Work Size,
+        ylabel=GigaMultsPerSecond,
+        xlabel=Local Work Size,
         legend style={
             legend pos=outer north east
         }
     ]
-    \addplot+[smooth, mark=none] table[y=TEMP(C), x=STEP] {\graindeer};
-    \addplot+[smooth, mark=none] table[y=PRECIP(cm), x=STEP] {\graindeer};
-    \addplot+[smooth, mark=none,color=green!60!black] table[y=GRAIN(cm), x=STEP] {\graindeer};
-    \addplot+[smooth, mark=none] table[y=DEER, x=STEP] {\graindeer};
-    \addplot+[smooth, mark=none, color=orange, thick] table[y=FIRE, x=STEP] {\graindeer};
-    \legend{Temperature, Precipitation, Grain, Deer, Fire}
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-1.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-2.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-3.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-4.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-5.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-6.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-7.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-8.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-9.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-10.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-11.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-12.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-13.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-14.dat};
+    \legend{1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608}
     \addlegendimage{empty legend}
-    \addlegendentry{Simultation \hfill}
-    \end{axis}
+    \addlegendentry{Local Work Size \hfill}
+    \end{loglogaxis}
 \end{tikzpicture}
 
-\section*{Patterns}
+\section*{Graph: Multiply-Add (Local)}
 
-As the grain increased, more deer were born and ate more. Each time a
-wildfire broke out the grain was reduced significantly, and as a result
-the deer started dying.
+\begin{tikzpicture}
+    \begin{loglogaxis}[
+        ymin=0,
+        log basis x={2},
+        title=Performance vs. Local Work Size,
+        ylabel=GigaMult-AddsPerSecond,
+        xlabel=Local Work Size,
+        legend style={
+            legend pos=outer north east
+        }
+    ]
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-1.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-2.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-3.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-4.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-5.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-6.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-7.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-8.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-9.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-10.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-11.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-12.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-13.dat};
+    \addplot+[smooth] table[y=GMPS, x=LOCAL_SIZE] {../data/vector-mult-add-14.dat};
+    \legend{1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608}
+    \addlegendimage{empty legend}
+    \addlegendentry{Local Work Size \hfill}
+    \end{loglogaxis}
+\end{tikzpicture}
 
-\section*{Tables}
+There is very little difference between these two graphs when varying the local
+work group size. This makes sense as the OpenCL operations being performed are
+independent of each other, and do not share any data. I have no clues as to why
+the outliers at $2^8$ exist only for the non-multiply-and-add.
 
-\begin{figure*}[b]
-\lstinputlisting{../data/graindeer.dat}
-\captionof{table}{Grain Deer Simulation}
-\end{figure*}
+\section*{Graphs: Multiply (Global)}
 
+\begin{tikzpicture}
+    \begin{loglogaxis}[
+        ymin=0,
+        log basis x={2},
+        title=Performance vs. Global Work Size,
+        ylabel=GigaMultsPerSecond,
+        xlabel=Global Work Size,
+        legend style={
+            legend pos=outer north east
+        }
+    ]
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-1.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-2.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-4.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-8.dat};
+    %\addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-16.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-32.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-64.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-128.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-256.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-512.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-group-1024.dat};
+    \legend{1, 2, 4, 8, 32, 64, 128, 256, 512, 1024}
+    \addlegendimage{empty legend}
+    \addlegendentry{Global Size \hfill}
+    \end{loglogaxis}
+\end{tikzpicture}
+
+\section*{Graphs: Multiply-Add (Global)}
+
+\begin{tikzpicture}
+    \begin{loglogaxis}[
+        ymin=0,
+        log basis x={2},
+        title=Performance vs. Global Work Size,
+        ylabel=GigaMult-AddsPerSecond,
+        xlabel=Global Work Size,
+        legend style={
+            legend pos=outer north east
+        }
+    ]
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-1.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-2.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-4.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-8.dat};
+    %\addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-16.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-32.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-64.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-128.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-256.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-512.dat};
+    \addplot+[smooth] table[y=GMPS, x=NUM_WORK_GROUPS] {../data/vector-mult-add-group-1024.dat};
+    \legend{1, 2, 4, 8, 32, 64, 128, 256, 512, 1024}
+    \addlegendimage{empty legend}
+    \addlegendentry{Global Size \hfill}
+    \end{loglogaxis}
+\end{tikzpicture}
+
+Both multiply and multiply-add show the same performance changes as the
+number of elements increases. This shows that the addition of an extra
+operation (no pun intended) does not affect the GPU performance.
+
+As the global work size increases (as the number of elements increases)
+the performance continues to improve. This tells us that performance is
+(again) independent of the local work group size. 
+
+When the number of elements reaches $32768$ there is a noticeable drop in
+performance followed by a continual climb across the board. This is most
+likely due to maxing out the 384 CUDA cores available on the GPU causing
+the overhead of swapping front/back buffers to be added.
+
+\section*{Tables: Multiply (Local)}
+\lstinputlisting{../data/vector-mult-1.dat}
+\lstinputlisting{../data/vector-mult-2.dat}
+\lstinputlisting{../data/vector-mult-3.dat}
+\lstinputlisting{../data/vector-mult-4.dat}
+\lstinputlisting{../data/vector-mult-5.dat}
+\lstinputlisting{../data/vector-mult-6.dat}
+\lstinputlisting{../data/vector-mult-7.dat}
+\lstinputlisting{../data/vector-mult-8.dat}
+\lstinputlisting{../data/vector-mult-9.dat}
+\lstinputlisting{../data/vector-mult-10.dat}
+\lstinputlisting{../data/vector-mult-11.dat}
+\lstinputlisting{../data/vector-mult-12.dat}
+\lstinputlisting{../data/vector-mult-13.dat}
+\lstinputlisting{../data/vector-mult-14.dat}
+
+\section*{Tables: Multiply-Add (Local)}
+\lstinputlisting{../data/vector-mult-add-1.dat}
+\lstinputlisting{../data/vector-mult-add-2.dat}
+\lstinputlisting{../data/vector-mult-add-3.dat}
+\lstinputlisting{../data/vector-mult-add-4.dat}
+\lstinputlisting{../data/vector-mult-add-5.dat}
+\lstinputlisting{../data/vector-mult-add-6.dat}
+\lstinputlisting{../data/vector-mult-add-7.dat}
+\lstinputlisting{../data/vector-mult-add-8.dat}
+\lstinputlisting{../data/vector-mult-add-9.dat}
+\lstinputlisting{../data/vector-mult-add-10.dat}
+\lstinputlisting{../data/vector-mult-add-11.dat}
+\lstinputlisting{../data/vector-mult-add-12.dat}
+\lstinputlisting{../data/vector-mult-add-13.dat}
+\lstinputlisting{../data/vector-mult-add-14.dat}
+
+\section*{Tables: Multiply (Global)}
+\lstinputlisting{../data/vector-mult-group-1.dat}
+\lstinputlisting{../data/vector-mult-group-2.dat}
+\lstinputlisting{../data/vector-mult-group-4.dat}
+\lstinputlisting{../data/vector-mult-group-8.dat}
+\lstinputlisting{../data/vector-mult-group-32.dat}
+\lstinputlisting{../data/vector-mult-group-64.dat}
+\lstinputlisting{../data/vector-mult-group-128.dat}
+\lstinputlisting{../data/vector-mult-group-256.dat}
+\lstinputlisting{../data/vector-mult-group-512.dat}
+\lstinputlisting{../data/vector-mult-group-1024.dat}
+
+\section*{Tables: Multiply-Add (Global)}
+\lstinputlisting{../data/vector-mult-add-group-1.dat}
+\lstinputlisting{../data/vector-mult-add-group-2.dat}
+\lstinputlisting{../data/vector-mult-add-group-4.dat}
+\lstinputlisting{../data/vector-mult-add-group-8.dat}
+\lstinputlisting{../data/vector-mult-add-group-32.dat}
+\lstinputlisting{../data/vector-mult-add-group-64.dat}
+\lstinputlisting{../data/vector-mult-add-group-128.dat}
+\lstinputlisting{../data/vector-mult-add-group-256.dat}
+\lstinputlisting{../data/vector-mult-add-group-512.dat}
+\lstinputlisting{../data/vector-mult-add-group-1024.dat}
 
 \end{document}
