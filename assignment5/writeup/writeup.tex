@@ -29,21 +29,33 @@
 
 \section*{OpenCL Array Multiply, Multiply-Add, and Multiply-Reduce}
 
-My program used the following combination of parameters:
+This assignment was compiled on my laptop, a Thinkpad W540 with 8 CPUs
+(1 sockets, 4 cores, 2 threads per core) and a Nvidia Quatro K1100M.
 
+I had three major problems getting my program to compile and run:
 \begin{itemize}
-    \item Simulation Variables
-        \begin{multicols}{2}
-            \begin{itemize}
-                \item Temperature
-                \item Precipitation
-                \item Grain
-                \item Fire
-                \item Deer
-            \end{itemize}
-        \end{multicols}
-\end{itemize}
+    \item Proprietary Graphics
+        Though the Nvidia Quatro K1100M supports OpenCL, from my
+        experience the open source drivers do not. There may be CUDA
+        drivers, or an OpenCL SDK in a seperate package, but they are
+        bundled with the open source driver, nor is there any solid
+        information online regarding getting OpenCL working with the
+        open source drivers.
+    \item Link Flags
+        My C programming knowledge is limited, and a lot of time was
+        spent trying to gcc to link the program against the OpenCL
+        library. This most likely worked from the beginning, and my
+        issues was merely having the link flags before the source file,
+        instead of after.
+    \item Multiple GPUs (Bumblebee)
+        The W540 Thinkpad actually contains two GPUs: an integrated
+        Intel graphics processor, and the Quatro K1100M. The printinfo
+        command showed both cards, with only the Quatro supporting
+        OpenCL. I had to change the first.cpp file to query for both
+        devices, and use the second (Quatro) one.
 
+After these hurdles I was able to compile, run, and recieved data from
+the program. 
 
 \section*{Graph}
 
