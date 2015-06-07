@@ -1,0 +1,6 @@
+vectorized
+spmd
+
+*.aux
+*.mk
+*.log
