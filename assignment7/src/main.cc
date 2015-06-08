@@ -34,7 +34,8 @@ int main( int argc, char *argv[ ] )
 
     begin = omp_get_wtime();
 
-    #pragma omp parallel for default(none),shared(A,B),private(C)
+    //#pragma omp parallel for default(none),shared(A,B),private(C)
+    #pragma omp simd parallel for
     for( int i = 0; i < NUMS; i++ )
     {
         C[i] = A[i]*B[i];
