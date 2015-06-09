@@ -20,7 +20,11 @@
 
 using std::cout;
 
-void DoMul()
+int A[NUMS];
+int B[NUMS];
+int C[NUMS];
+
+void DoMult()
 {
     const int share = NUMS / NUMT;
     int me = omp_get_thread_num( );
@@ -36,14 +40,9 @@ int main( int argc, char *argv[ ] )
 
     omp_set_num_threads(NUMT);
 
-    int A[NUMS];
-    int B[NUMS];
-    int C[NUMS];
-
     begin = omp_get_wtime();
 
-    #pragma omp parallel for default(none),shared(A,B,C)
-    for( int i = 0; i < NUMS; i++ )
+    #pragma omp parallel
     {
         DoMult();
     }
